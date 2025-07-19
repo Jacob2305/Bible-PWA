@@ -1,0 +1,62 @@
+.homeContainer {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Horizontal centering */
+}
+
+.homeWelcome {
+  font-size: 2.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.homeStatsContainer {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.homeStatBox {
+  background-color: #f5f5f5;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.homeEmoji {
+  font-size: 1.8rem;
+}
+
+.homeStatNumber {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.homeStatLabel {
+  font-size: 1.5rem;
+  color: #666;
+  text-align: center;
+}
+
+.homeChecklistContainer {
+  text-align: center;
+}
+
+.homeChecklistTitle {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.homeChecklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.homeChecklistItem {
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+}

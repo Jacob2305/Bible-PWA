@@ -1,0 +1,59 @@
+.postContainer {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  font-family: 'Georgia', serif;
+  user-select: text;
+}
+
+.postVerse {
+  font-size: 1.5rem;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+}
+
+.postReference {
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.postPoster {
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.postDescription {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.postActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.postBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.25s ease;
+  user-select: none;
+  color: inherit;
+}
+
+.postBtn:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.postBtnReacted {
+  color: red;
+  font-weight: bold;
+}
