@@ -54,3 +54,7 @@ html, body {
   padding: 0;
   overflow: hidden; /* prevent body scroll */
 }
+
+* {
+  touch-action: manipulation;
+}

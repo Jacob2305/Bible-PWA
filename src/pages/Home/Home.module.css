@@ -2,7 +2,7 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Horizontal centering */
+  align-items: center;
 }
 
 .homeWelcome {
@@ -39,24 +39,4 @@
   font-size: 1.5rem;
   color: #666;
   text-align: center;
-}
-
-.homeChecklistContainer {
-  text-align: center;
-}
-
-.homeChecklistTitle {
-  font-size: 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.homeChecklist {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.homeChecklistItem {
-  margin-bottom: 0.75rem;
-  font-size: 1rem;
 }

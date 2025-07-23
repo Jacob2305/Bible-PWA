@@ -8,7 +8,7 @@ import Account from './pages/Account/Account.jsx'
 
 export default function App() {
   return (
-    <Router>
+    <Router basename="/Bible-PWA">
       <div className="app-container">
         <main className="page-content">
           <Routes>

@@ -1,0 +1,97 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: system-ui, sans-serif;
+}
+
+.controls {
+  display: flex;
+  gap: 6px;
+}
+
+.input {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+}
+
+.iconButton {
+  background: #e0e0e0;
+  border: none;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.textarea {
+  resize: none;
+  min-height: 60px;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+}
+
+.greenButton {
+  background-color: #27ae60;
+  border: none;
+  color: white;
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  user-select: none;
+  font-weight: 600;
+}
+
+.randomizeButton {
+  background-color: #aaa;
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  font-size: .9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  user-select: none;
+  font-weight: 600;
+}
+
+.preview {
+  margin: 0;
+}
+
+.errorBox {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}

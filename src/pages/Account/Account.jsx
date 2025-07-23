@@ -7,9 +7,9 @@ export default function Account() {
     <div className={styles.accountContainer}>
       <div className={styles.profileSection}>
         <FaUserCircle className={styles.profileIcon} />
-        <h2 className={styles.userName}>John Doe</h2>
+        <h2 className={styles.userName}></h2>
         <p className={styles.userDescription}>
-          Hello there :)
+          No description added.
         </p>
       </div>
 
