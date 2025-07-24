@@ -6,7 +6,7 @@ export default function Post({ verse, reference, poster, description, colorInput
   const [commentCount, setCommentCount] = useState(0);
 
   const handleCopy = () => {
-    const textToCopy = `${verse} — ${reference}`;
+    const textToCopy = `${verse}\n— ${reference}`;
     navigator.clipboard.writeText(textToCopy);
   };
 

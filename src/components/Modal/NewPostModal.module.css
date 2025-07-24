@@ -95,3 +95,10 @@
   font-weight: 500;
   font-size: 0.9rem;
 }
+
+.select {
+  padding: 6px;
+  font-size: 14px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
