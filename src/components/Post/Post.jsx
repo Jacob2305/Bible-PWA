@@ -1,9 +1,62 @@
-import React, { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import styles from './Post.module.css';
+import EmojiPicker from 'emoji-picker-react';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebase';
 
-export default function Post({ verse, reference, poster, description, colorInput, isPreview = false }) {
-  const [reacted, setReacted] = useState(false);
+export default function Post({
+  id,
+  verse,
+  reference,
+  poster,
+  description,
+  colorInput,
+  reactions = {},
+  isPreview = false
+}) {
+  const [localReactions, setLocalReactions] = useState(reactions);
+  const [toggled, setToggled] = useState(new Set());
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const [commentCount, setCommentCount] = useState(0);
+  const pickerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setShowPicker(false);
+      }
+    }
+
+    if (showPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showPicker]);
+
+  const toggleReaction = async (emoji) => {
+    const hasToggled = toggled.has(emoji);
+    const newCount = (localReactions[emoji] || 0) + (hasToggled ? -1 : 1);
+    if (newCount < 0) return;
+
+    const updated = {
+      ...localReactions,
+      [emoji]: newCount,
+    };
+
+    const postRef = doc(db, 'posts', id);
+    await updateDoc(postRef, { reactions: updated });
+
+    setLocalReactions(updated);
+    setToggled((prev) => {
+      const copy = new Set(prev);
+      hasToggled ? copy.delete(emoji) : copy.add(emoji);
+      return copy;
+    });
+  };
 
   const handleCopy = () => {
     const textToCopy = `${verse}\n— ${reference}`;
@@ -44,6 +97,7 @@ export default function Post({ verse, reference, poster, description, colorInput
   const textColor = averageLightness > 60 ? '#000' : '#fff';
 
   return (
+    <>
     <div
       className={styles.postContainer}
       style={{
@@ -59,35 +113,91 @@ export default function Post({ verse, reference, poster, description, colorInput
       {description && <div className={styles.postDescription}>{description}</div>}
 
       {!isPreview && (
-        <div className={styles.postActions}>
-          <button
-            className={`${styles.postBtn} ${reacted ? styles.postBtnReacted : ''}`}
-            onClick={() => setReacted(!reacted)}
-            aria-label="React to post"
-            type="button"
-          >
-            {reacted ? '❤️ Reacted' : '🤍 React'}
-          </button>
+        <div className={styles.bottomRow}>
+          <div className={styles.reactions}>
+            <button
+              className={styles.iconBtn}
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setPickerPos({ top: rect.bottom + window.scrollY + 6, left: rect.left + window.scrollX });
+                setShowPicker(true);
+              }}
+              type="button"
+              aria-label="Add emoji"
+            >
+              <span className="material-icons">add</span>
+            </button>
 
-          <button
-            className={styles.postBtn}
-            onClick={() => setCommentCount(commentCount + 1)}
-            aria-label="Add comment"
-            type="button"
-          >
-            💬 Comment ({commentCount})
-          </button>
+            {Object.entries(localReactions)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 3)
+              .map(([emoji, count]) => (
+                <button
+                  key={emoji}
+                  className={`${styles.reactionButton} ${toggled.has(emoji) ? styles.reactionToggled : ''}`}
+                  onClick={() => toggleReaction(emoji)}
+                  type="button"
+                >
+                  <span className={styles.emojiBubble}>
+                    {emoji} {count}
+                  </span>
+                </button>
+              ))}
+          </div>
 
-          <button
-            className={styles.postBtn}
-            onClick={handleCopy}
-            aria-label="Copy verse"
-            type="button"
-          >
-            📋 Copy
-          </button>
+          <div className={styles.actions}>
+            <button className={styles.iconBtn} onClick={handleCopy} type="button" aria-label="Copy">
+              <span className="material-icons">content_copy</span>
+            </button>
+            <button className={styles.iconBtn} type="button" aria-label="Repost">
+              <span className="material-icons">repeat</span>
+            </button>
+            <button className={styles.iconBtn}
+              type="button"
+              aria-label="Comments"
+              onClick={() => setCommentCount(commentCount + 1)}
+            >
+              <span className="material-icons">chat_bubble_outline</span>
+              <span className={styles.commentCount}>{commentCount}</span>
+            </button>
+          </div>
+
+          {showPicker && (
+            <div
+              className={styles.pickerPopup}
+              style={{ top: pickerPos.top, left: pickerPos.left }}
+            >
+              <EmojiPicker
+                onEmojiClick={(emojiObject) => {
+                  setShowPicker(false);
+                  toggleReaction(emojiObject.emoji);
+                }}
+                theme={textColor === '#000' ? 'light' : 'dark'}
+                height={350}
+                width={300}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
+    {showPicker && (
+      <div
+        ref={pickerRef}
+        className={styles.pickerPopup}
+        style={{ top: pickerPos.top, left: pickerPos.left }}
+      >
+        <EmojiPicker
+          onEmojiClick={(emojiObject) => {
+            setShowPicker(false);
+            toggleReaction(emojiObject.emoji);
+          }}
+          theme={textColor === '#000' ? 'light' : 'dark'}
+          height={350}
+          width={300}
+        />
+      </div>
+    )}
+    </>
   );
 }

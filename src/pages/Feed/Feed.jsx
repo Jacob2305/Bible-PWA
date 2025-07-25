@@ -33,6 +33,7 @@ export default function Feed() {
             description: data.description || '',
             background: data.colorInput || ['#ffffff', '#ffffff'],
             timestamp: data.createdAt || null,
+            reactions: data.reactions || {},
           };
         });
 
@@ -70,11 +71,13 @@ export default function Feed() {
       {allPosts.map((post, index) => (
         <div key={post.id || index} className={styles.postSpacing}>
           <Post
+            id={post.id}
             verse={post.verse}
             reference={post.reference}
             poster={post.poster}
             description={post.description}
             colorInput={post.background}
+            reactions={post.reactions}
           />
         </div>
       ))}
