@@ -4,7 +4,7 @@ import Post from '../Post/Post';
 import { db } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-export default function NewPostModal({ isOpen, onClose }) {
+export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   const [verseInput, setVerseInput] = useState('');
   const [verseText, setVerseText] = useState('');
   const [reference, setReference] = useState('');
@@ -15,23 +15,57 @@ export default function NewPostModal({ isOpen, onClose }) {
   const [isPosting, setIsPosting] = useState(false);
   const [version, setVersion] = useState('kjv');
   const [shortVersion, setShortVersion] = useState('KJV');
+
   const VERSION_OPTIONS = [
     { value: 'kjv', label: 'KJV' },
     { value: 'web', label: 'WEB' },
     { value: 'chinese_union_simp', label: 'CUVS' },
   ];
+  const VERSION_MAP = {
+    kjv: 'kjv',
+    web: 'web',
+    cuvs: 'chinese_union_simp',
+    chinese_union_simp: 'chinese_union_simp',
+  };
+
 
   useEffect(() => {
     if (!isOpen) return;
 
-    setVerseInput('');
-    setVerseText('');
-    setReference('');
-    setDescription('');
-    setPoster('');
-    setBackground(generateRandomGradient());
-    setErrors([]);
-  }, [isOpen]);
+    if (repostData) {
+      const { versePart, versionPart: rawVersion } = parseReference(repostData.reference);
+
+      const VERSION_MAP = {
+        kjv: 'kjv',
+        web: 'web',
+        cuvs: 'chinese_union_simp',
+        chinese_union_simp: 'chinese_union_simp',
+      };
+
+      const versionKey = VERSION_MAP[rawVersion] || 'kjv';
+
+      setVerseInput(versePart || '');
+      setVersion(versionKey);
+      setShortVersion(
+        VERSION_OPTIONS.find((opt) => opt.value === versionKey)?.label || 'KJV'
+      );
+
+      setVerseText(repostData.verse || '');
+      setReference(repostData.reference || '');
+      setDescription(repostData.description || '');
+      setPoster(repostData.poster || '');
+      setBackground(repostData.colorInput || generateRandomGradient());
+    } else {
+      setVerseInput('');
+      setVerseText('');
+      setReference('');
+      setDescription('');
+      setPoster('');
+      setBackground(generateRandomGradient());
+      setErrors([]);
+    }
+  }, [isOpen, repostData]);
+
 
   const handleSearch = async () => {
     if (!verseInput) return;
@@ -39,13 +73,20 @@ export default function NewPostModal({ isOpen, onClose }) {
     setErrors([]);
 
     try {
-      const match = verseInput.match(/^([^\d]+)\s+(\d+:\d+(-\d+)?)$/);
       let book = '';
       let verse = '';
+
+      // Remove all whitespace and lowercase
+      const cleaned = verseInput.trim().toLowerCase().replace(/\s+/g, '');
+
+      // Match book and verse
+      const match = cleaned.match(/^([1-3]?[a-z]+)(\d+:\d+(-\d+)?)$/);
+
       if (match) {
-        book = match[1].trim();
-        verse = match[2].trim();
+        book = match[1];
+        verse = match[2];
       }
+
       if (version === 'cuv' && bookNameMap[book]) {
         book = bookNameMap[book];
       }
@@ -282,4 +323,12 @@ function generateRandomGradient(input = '') {
   const color2 = `hsl(${h2}, ${s2}%, ${l2}%)`;
 
   return [color1, color2];
+}
+
+function parseReference(ref) {
+  if (!ref) return { versePart: '', versionPart: 'kjv' };
+  const versionMatch = ref.match(/\(([^)]+)\)$/);
+  const versionPart = versionMatch ? versionMatch[1].toLowerCase() : 'kjv';
+  const versePart = ref.replace(/\s*\([^)]+\)$/, '').trim();
+  return { versePart, versionPart };
 }

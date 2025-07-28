@@ -3,6 +3,7 @@ import styles from './Post.module.css';
 import EmojiPicker from 'emoji-picker-react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
+import NewPostModal from '../Modal/NewPostModal';
 
 export default function Post({
   id,
@@ -12,11 +13,12 @@ export default function Post({
   description,
   colorInput,
   reactions = {},
-  isPreview = false
+  isPreview = false,
 }) {
   const [localReactions, setLocalReactions] = useState(reactions);
   const [toggled, setToggled] = useState(new Set());
   const [showPicker, setShowPicker] = useState(false);
+  const [isRepostModalOpen, setIsRepostModalOpen] = useState(false);
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const [commentCount, setCommentCount] = useState(0);
   const pickerRef = useRef(null);
@@ -149,7 +151,12 @@ export default function Post({
             <button className={styles.iconBtn} onClick={handleCopy} type="button" aria-label="Copy">
               <span className="material-icons">content_copy</span>
             </button>
-            <button className={styles.iconBtn} type="button" aria-label="Repost">
+            <button
+              className={styles.iconBtn}
+              type="button"
+              aria-label="Repost"
+              onClick={() => setIsRepostModalOpen(true)}
+            >
               <span className="material-icons">repeat</span>
             </button>
             <button className={styles.iconBtn}
@@ -197,6 +204,18 @@ export default function Post({
           width={300}
         />
       </div>
+    )}
+    {isRepostModalOpen && (
+      <NewPostModal
+        isOpen={isRepostModalOpen}
+        onClose={() => setIsRepostModalOpen(false)}
+        repostData={{
+          verse,
+          reference,
+          description,
+          colorInput: [color1, color2],
+        }}
+      />
     )}
     </>
   );

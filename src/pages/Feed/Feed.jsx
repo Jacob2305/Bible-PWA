@@ -4,8 +4,9 @@ import NewPostModal from '../../components/Modal/NewPostModal';
 import styles from './Feed.module.css';
 import posts from '../../data/posts';
 
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../../firebase/firebase';
+import { Timestamp } from 'firebase/firestore';
 
 export default function Feed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,7 +14,8 @@ export default function Feed() {
 
   useEffect(() => {
     const postsRef = collection(db, 'posts');
-    const q = query(postsRef, orderBy('createdAt', 'desc'));
+    const sevenDaysAgo = Timestamp.fromDate(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000));
+    const q = query(postsRef, orderBy('createdAt', 'desc'), where('createdAt', '>=', sevenDaysAgo));
 
     const unsubscribe = onSnapshot(
       q,
