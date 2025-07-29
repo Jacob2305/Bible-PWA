@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styles from './NewPostModal.module.css';
 import Post from '../Post/Post';
-import { db } from '../../firebase/firebase';
+import { auth, db } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   const [verseInput, setVerseInput] = useState('');
@@ -28,43 +30,69 @@ export default function NewPostModal({ isOpen, onClose, repostData = null }) {
     chinese_union_simp: 'chinese_union_simp',
   };
 
-
   useEffect(() => {
-    if (!isOpen) return;
+  if (!isOpen) return;
 
-    if (repostData) {
-      const { versePart, versionPart: rawVersion } = parseReference(repostData.reference);
+  if (repostData) {
+    const { versePart, versionPart: rawVersion } = parseReference(repostData.reference);
 
-      const VERSION_MAP = {
-        kjv: 'kjv',
-        web: 'web',
-        cuvs: 'chinese_union_simp',
-        chinese_union_simp: 'chinese_union_simp',
-      };
+    const VERSION_MAP = {
+      kjv: 'kjv',
+      web: 'web',
+      cuvs: 'chinese_union_simp',
+      chinese_union_simp: 'chinese_union_simp',
+    };
 
-      const versionKey = VERSION_MAP[rawVersion] || 'kjv';
+    const versionKey = VERSION_MAP[rawVersion] || 'kjv';
 
-      setVerseInput(versePart || '');
-      setVersion(versionKey);
+    setVerseInput(versePart || '');
+    setVersion(versionKey);
+    setShortVersion(
+      VERSION_OPTIONS.find((opt) => opt.value === versionKey)?.label || 'KJV'
+    );
+
+    setVerseText(repostData.verse || '');
+    setReference(repostData.reference || '');
+    setDescription(repostData.description || '');
+    setBackground(repostData.colorInput || generateRandomGradient());
+
+    if (repostData?.poster) {
+      setPoster(repostData.poster);
+      setVersion(repostData.version || 'kjv');
       setShortVersion(
-        VERSION_OPTIONS.find((opt) => opt.value === versionKey)?.label || 'KJV'
+        VERSION_OPTIONS.find((opt) => opt.value === repostData.version)?.label || 'KJV'
       );
-
-      setVerseText(repostData.verse || '');
-      setReference(repostData.reference || '');
-      setDescription(repostData.description || '');
-      setPoster(repostData.poster || '');
-      setBackground(repostData.colorInput || generateRandomGradient());
     } else {
-      setVerseInput('');
-      setVerseText('');
-      setReference('');
-      setDescription('');
-      setPoster('');
-      setBackground(generateRandomGradient());
-      setErrors([]);
+      setPoster(''); // clear for now, will set from user below
     }
-  }, [isOpen, repostData]);
+  } else {
+    // no repost data — reset all
+    setVerseInput('');
+    setVerseText('');
+    setReference('');
+    setDescription('');
+    setPoster('');
+    setBackground(generateRandomGradient());
+    setErrors([]);
+  }
+
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      const docRef = doc(db, 'users', user.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setPoster(userData.name || '');
+        setVersion(userData.version || 'kjv');
+        setShortVersion(
+          VERSION_OPTIONS.find(opt => opt.value === (userData.version || 'kjv'))?.label || 'KJV'
+        );
+      }
+    }
+  });
+
+  return () => unsubscribe();
+}, [isOpen, repostData]);
 
 
   const handleSearch = async () => {
@@ -223,14 +251,6 @@ export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <input
-          type="text"
-          placeholder="Your name"
-          value={poster}
-          onChange={(e) => setPoster(e.target.value)}
-          className={styles.input}
-        />
-
         <div className={styles.controls}>
           <input
             type="text"

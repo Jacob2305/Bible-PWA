@@ -1,0 +1,84 @@
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.field input,
+.field textarea {
+  font-size: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+  background-color: #f9f9f9;
+  transition: border-color 0.2s ease;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: #007bff;
+  background-color: #fff;
+}
+
+.field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.select {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.select:focus {
+  border-color: #007bff;
+  outline: none;
+  background-color: #fff;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.saveButton {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease;
+  align-items: center;
+}
+
+.saveButton:hover {
+  background-color: #357abd;
+}
+
