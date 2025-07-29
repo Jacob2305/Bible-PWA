@@ -27,6 +27,14 @@ export default function Navbar() {
       >
         <span className="material-icons">person</span>
       </NavLink>
+
+      <NavLink
+        to="/memorize"
+        className={({ isActive }) => (isActive ? 'active' : '')}
+        aria-label="Memorize"
+      >
+        <span className="material-icons">memory</span>
+      </NavLink>
     </nav>
   )
 }

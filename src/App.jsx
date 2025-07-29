@@ -6,6 +6,8 @@ import Home from './pages/Home/Home.jsx';
 import Feed from './pages/Feed/Feed.jsx';
 import Account from './pages/Account/Account.jsx';
 import LoginPage from './pages/Login/LoginPage.jsx';
+import Memorize from './pages/Memorize/Memorize.jsx';
+
 
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/firebase';
@@ -47,6 +49,11 @@ function AppRoutes() {
             path="/login"
             element={!user ? <LoginPage /> : <Navigate to="/feed" />}
           />
+          <Route
+            path="/memorize"
+            element={user ? <Memorize /> : <Navigate to="/login" />}
+          />
+
         </Routes>
       </main>
 
