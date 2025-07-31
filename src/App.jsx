@@ -7,6 +7,7 @@ import Feed from './pages/Feed/Feed.jsx';
 import Account from './pages/Account/Account.jsx';
 import LoginPage from './pages/Login/LoginPage.jsx';
 import Memorize from './pages/Memorize/Memorize.jsx';
+import { AuthProvider } from './context/AuthContext';
 
 
 import { onAuthStateChanged } from 'firebase/auth';
@@ -65,9 +66,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <Router basename="/Bible-PWA">
-      <div className="app-container">
-        <AppRoutes />
-      </div>
+      <AuthProvider>
+        <div className="app-container">
+          <AppRoutes />
+        </div>
+      </AuthProvider>
     </Router>
   );
 }
