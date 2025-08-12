@@ -8,6 +8,7 @@ import LoginPage from './pages/Login/LoginPage.jsx';
 import Memorize from './pages/Memorize/Memorize.jsx';
 import { AuthProvider } from './context/AuthContext';
 import Friends from './pages/Friends/Friends.jsx';
+import Friends from './pages/Friends/Friends.jsx';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase/firebase';
 import './App.css'
