@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Home.module.css';
 import Post from '../../components/Post/Post';
+import { useAuth } from '../../context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebase';
 
 export default function Home() {
-  const streak = 1;
-  const points = 0;
-
+  const { user } = useAuth(); // Get current user
+  const [streak, setStreak] = useState(0);
+  const [points, setPoints] = useState(0);
   const [verseData, setVerseData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch Manna verse
   useEffect(() => {
-    fetch('https://beta.ourmanna.com/api/v1/get?format=json&order=daily', {
-      headers: {
-        accept: 'application/json',
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
+    async function fetchVerse() {
+      try {
+        const res = await fetch('https://beta.ourmanna.com/api/v1/get?format=json&order=daily');
+        const data = await res.json();
         const verseText = data?.verse?.details?.text || 'No verse today.';
         const verseRef = data?.verse?.details?.reference || '';
         setVerseData({
@@ -25,12 +26,36 @@ export default function Home() {
           poster: 'OurManna',
           description: '',
         });
+      } catch (err) {
+        console.error('Failed to fetch verse:', err);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+      }
+    }
+
+    fetchVerse();
   }, []);
+
+  // Fetch user streak and points
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUserStats = async () => {
+      try {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setStreak(data.streak || 0);
+          setPoints(data.points || 0);
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+      }
+    };
+
+    fetchUserStats();
+  }, [user]);
 
   return (
     <div className={styles.homeContainer}>

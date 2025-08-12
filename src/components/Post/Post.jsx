@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import styles from './Post.module.css';
 import EmojiPicker from 'emoji-picker-react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebase/firebase';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../firebase/firebase';
+import { updatePoints } from '../../utils/points';
 import NewPostModal from '../Modal/NewPostModal';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function Post({
   id,
@@ -22,6 +24,7 @@ export default function Post({
   const [pickerPos, setPickerPos] = useState({ top: 0, left: 0 });
   const [commentCount, setCommentCount] = useState(0);
   const pickerRef = useRef(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -34,8 +37,15 @@ export default function Post({
       document.addEventListener('mousedown', handleClickOutside);
     }
 
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+      }
+    });
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      unsubscribe();
     };
   }, [showPicker]);
 
@@ -51,6 +61,7 @@ export default function Post({
 
     const postRef = doc(db, 'posts', id);
     await updateDoc(postRef, { reactions: updated });
+    await updatePoints(user.uid, 'react');
 
     setLocalReactions(updated);
     setToggled((prev) => {
@@ -101,18 +112,20 @@ export default function Post({
   return (
     <>
     <div
-      className={styles.postContainer}
+      className={`${styles.postContainer} ${isPreview ? styles.previewScroll : ''}`}
       style={{
         background: `linear-gradient(135deg, ${color1}, ${color2})`,
         color: textColor
       }}
     >
-      {poster && poster.trim() !== '' && (
-        <div className={styles.postPoster}>Posted by {poster}</div>
-      )}
-      <div className={styles.postVerse}>“{verse}”</div>
-      <div className={styles.postReference}>{reference}</div>
-      {description && <div className={styles.postDescription}>{description}</div>}
+      <div className={isPreview ? styles.previewInner : ''}>
+        {poster && poster.trim() !== '' && (
+          <div className={styles.postPoster}>Posted by {poster}</div>
+        )}
+        <div className={styles.postVerse}>“{verse}”</div>
+        <div className={styles.postReference}>{reference}</div>
+        {description && <div className={styles.postDescription}>{description}</div>}
+      </div>
 
       {!isPreview && (
         <div className={styles.bottomRow}>

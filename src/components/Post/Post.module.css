@@ -120,6 +120,20 @@
 .pickerPopup {
   position: absolute;
   z-index: 9999;
-  pointer-events: auto; /* only once mounted */
+  pointer-events: auto;
   transition: opacity 0.1s ease;
+}
+
+.previewScroll {
+  max-height: 225px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.previewScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.previewInner {
+  padding-right: 0.5rem;
 }

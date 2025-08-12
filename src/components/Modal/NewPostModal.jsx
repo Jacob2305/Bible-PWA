@@ -5,6 +5,7 @@ import { auth, db } from '../../firebase/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { doc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { updatePoints } from '../../utils/points';
 
 export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   const [verseInput, setVerseInput] = useState('');
@@ -17,6 +18,7 @@ export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   const [isPosting, setIsPosting] = useState(false);
   const [version, setVersion] = useState('kjv');
   const [shortVersion, setShortVersion] = useState('KJV');
+  const [user, setUser] = useState(null);
 
   const VERSION_OPTIONS = [
     { value: 'kjv', label: 'KJV' },
@@ -31,68 +33,69 @@ export default function NewPostModal({ isOpen, onClose, repostData = null }) {
   };
 
   useEffect(() => {
-  if (!isOpen) return;
+    if (!isOpen) return;
 
-  if (repostData) {
-    const { versePart, versionPart: rawVersion } = parseReference(repostData.reference);
+    if (repostData) {
+      const { versePart, versionPart: rawVersion } = parseReference(repostData.reference);
 
-    const VERSION_MAP = {
-      kjv: 'kjv',
-      web: 'web',
-      cuvs: 'chinese_union_simp',
-      chinese_union_simp: 'chinese_union_simp',
-    };
+      const VERSION_MAP = {
+        kjv: 'kjv',
+        web: 'web',
+        cuvs: 'chinese_union_simp',
+        chinese_union_simp: 'chinese_union_simp',
+      };
 
-    const versionKey = VERSION_MAP[rawVersion] || 'kjv';
+      const versionKey = VERSION_MAP[rawVersion] || 'kjv';
 
-    setVerseInput(versePart || '');
-    setVersion(versionKey);
-    setShortVersion(
-      VERSION_OPTIONS.find((opt) => opt.value === versionKey)?.label || 'KJV'
-    );
-
-    setVerseText(repostData.verse || '');
-    setReference(repostData.reference || '');
-    setDescription(repostData.description || '');
-    setBackground(repostData.colorInput || generateRandomGradient());
-
-    if (repostData?.poster) {
-      setPoster(repostData.poster);
-      setVersion(repostData.version || 'kjv');
+      setVerseInput(versePart || '');
+      setVersion(versionKey);
       setShortVersion(
-        VERSION_OPTIONS.find((opt) => opt.value === repostData.version)?.label || 'KJV'
+        VERSION_OPTIONS.find((opt) => opt.value === versionKey)?.label || 'KJV'
       );
-    } else {
-      setPoster(''); // clear for now, will set from user below
-    }
-  } else {
-    // no repost data — reset all
-    setVerseInput('');
-    setVerseText('');
-    setReference('');
-    setDescription('');
-    setPoster('');
-    setBackground(generateRandomGradient());
-    setErrors([]);
-  }
 
-  const unsubscribe = onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      const docRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        setPoster(userData.name || '');
-        setVersion(userData.version || 'kjv');
+      setVerseText(repostData.verse || '');
+      setReference(repostData.reference || '');
+      setDescription(repostData.description || '');
+      setBackground(repostData.colorInput || generateRandomGradient());
+
+      if (repostData?.poster) {
+        setPoster(repostData.poster);
+        setVersion(repostData.version || 'kjv');
         setShortVersion(
-          VERSION_OPTIONS.find(opt => opt.value === (userData.version || 'kjv'))?.label || 'KJV'
+          VERSION_OPTIONS.find((opt) => opt.value === repostData.version)?.label || 'KJV'
         );
+      } else {
+        setPoster(''); // clear for now, will set from user below
       }
+    } else {
+      // no repost data — reset all
+      setVerseInput('');
+      setVerseText('');
+      setReference('');
+      setDescription('');
+      setPoster('');
+      setBackground(generateRandomGradient());
+      setErrors([]);
     }
-  });
 
-  return () => unsubscribe();
-}, [isOpen, repostData]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user);
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setPoster(userData.name || '');
+          setVersion(userData.version || 'kjv');
+          setShortVersion(
+            VERSION_OPTIONS.find(opt => opt.value === (userData.version || 'kjv'))?.label || 'KJV'
+          );
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [isOpen, repostData]);
 
 
   const handleSearch = async () => {
@@ -223,6 +226,7 @@ export default function NewPostModal({ isOpen, onClose, repostData = null }) {
         colorInput: background,
         createdAt: serverTimestamp(),
       });
+      await updatePoints(user.uid, 'post');
 
       setErrors([]);
       onClose();
