@@ -5,7 +5,7 @@ import { signInWithPopup, signInAnonymously, signInWithEmailAndPassword, createU
 import { auth, provider, db } from '../../firebase/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 
-export default function LoginPage() {
+export default function LoginPage({ onLoginSuccess }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,19 +14,49 @@ export default function LoginPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) navigate('/feed');
+      if (user && !user.isAnonymous) {
+        // Only navigate for non-anonymous users
+        if (onLoginSuccess) onLoginSuccess();
+        navigate('/feed');
+      }
     });
     return () => unsub();
-  }, []);
+  }, [navigate, onLoginSuccess]);
 
   const createProfile = async (user) => {
-    await setDoc(doc(db, 'users', user.uid), {
-      uid: user.uid,
-      name: user.displayName || 'Anonymous',
-      email: user.email || '',
-      photoURL: user.photoURL || '',
-      description: '',
-    }, { merge: true });
+    try {
+      // Determine the display name
+      let displayName;
+      if (user.isAnonymous) {
+        displayName = 'Anonymous User';
+      } else {
+        displayName = user.displayName || user.email?.split('@')[0] || 'User';
+      }
+
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        name: displayName, // Using 'name' to match the friends system
+        displayName: displayName, // Keep this for backward compatibility
+        nameLower: displayName.toLowerCase(), // Match the search system
+        displayNameLower: displayName.toLowerCase(), // Keep for backward compatibility
+        email: user.email || '',
+        photoURL: user.photoURL || '',
+        profilePicture: user.photoURL || '', // Match the friends system
+        description: '',
+        bio: '', // Match the friends system
+        friends: [], // Initialize empty friends array
+        incomingFriendRequests: [], // Initialize empty incoming requests array
+        outgoingFriendRequests: [], // Initialize empty outgoing requests array
+        isAnonymous: user.isAnonymous || false, // Track if user is anonymous
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      console.log('User profile created/updated:', user.uid);
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
   };
 
   const handleGoogle = async () => {
@@ -62,9 +92,9 @@ export default function LoginPage() {
       <div className={styles.loginBox}>
         <h1 className={styles.title}>Daily Manna</h1>
         <p className={styles.subtitle}>Sign in to continue</p>
-
+        
         {error && <p className={styles.error}>{error}</p>}
-
+        
         <input
           type="email"
           placeholder="Email"
@@ -79,21 +109,24 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        
         <button className={styles.primaryButton} onClick={handleEmail}>
           {mode === 'signin' ? 'Sign In with Email' : 'Create Account'}
         </button>
+        
         <p
           className={styles.toggle}
           onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
         >
           {mode === 'signin' ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
         </p>
-
+        
         <div className={styles.divider}>or</div>
-
+        
         <button className={styles.googleButton} onClick={handleGoogle}>
           Continue with Google
         </button>
+        
         <button className={styles.anonButton} onClick={handleAnonymous}>
           Continue as Guest
         </button>
